@@ -30,9 +30,10 @@ namespace BorkelRNVG
                 {
                     Logger.LogMessage($"---BUNDLE LOADED---");
                     masks = bundle.LoadAllAssets<Texture2D>(); //loads all assets, including the important ones: mask_anvis, mask_binocular, mask_old_monocular
-                    Logger.LogMessage($"mask 0: {masks[0].name}"); //mask 0: mask_anvis
-                    Logger.LogMessage($"mask 1: {masks[1].name}"); //mask 1: mask_binocular
-                    Logger.LogMessage($"mask 2: {masks[2].name}"); //mask 2: mask_old_monocular
+                    Logger.LogMessage($"Texture2D 0: {masks[0].name}"); //mask 0: mask_anvis
+                    Logger.LogMessage($"Texture2D 1: {masks[1].name}"); //mask 1: mask_binocular
+                    Logger.LogMessage($"Texture2D 2: {masks[2].name}"); //mask 2: mask_old_monocular
+                    new GetAssetReturnPatch().Enable();
 
                     //this is just to test that the bundle and the assets are correctly loaded by the .dll
                     //it extracts the .png assets from the bundle, it does it correctly
@@ -74,15 +75,26 @@ namespace BorkelRNVG
         // Inherit GetTargetMethod and have it return with the MethodBase for our requested method
         protected override MethodBase GetTargetMethod()
         {   // BindingFlags.NonPublic as the method is private
-            return typeof(AssetsManagerClass).GetMethod("method_0", BindingFlags.Instance | BindingFlags.NonPublic);
+            Type MyType = Type.GetType("System.Reflection.FieldInfo");
+            MethodInfo Mymethodinfo = MyType.GetMethod("GetAsset");
+            Type ReturnType = Mymethodinfo.ReturnType;
+            return typeof(AssetsManagerClass).GetMethod("GetAsset", BindingFlags.Instance | BindingFlags.Public);
         }
         // Create postfix method with PatchPostfix attribute and ref matching the type of the method's result
         [PatchPostfix]
         static void Postfix(ref UnityEngine.Object __result)
         {
             asset = __result; // Get the return value from CalculateInt and set it to our field
-            //Logger.LogMessage($"ASSET NAME: {asset.name}");
-            Logger.LogMessage($"ASSET------------------------------------");
+            if (asset != null)
+            {
+                Logger.LogMessage($"ASSET NAME: {asset.name}");
+
+            }
+            else
+            {
+                Logger.LogMessage($"ASSET BE NULL");
+            }
+            //Logger.LogMessage($"ASSET------------------------------------");
         }
     }
 }
