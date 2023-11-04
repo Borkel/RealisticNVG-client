@@ -1,5 +1,6 @@
 ﻿using EFT;
 using Aki.Reflection.Patching;
+//using Comfort.Common;
 using BepInEx;
 using System;
 using System.IO;
@@ -8,6 +9,7 @@ using UnityEngine;
 using BepInEx.Logging;
 using HarmonyLib;
 using System.Linq;
+using BSG.CameraEffects;
 
 namespace BorkelRNVG
 {
@@ -69,6 +71,18 @@ namespace BorkelRNVG
             }
         }
     }
+    /*public class AccessGameWorldController : MonoBehaviour
+    {
+        private static NightVision gameWorld; // field we'll use to hold the GameWorld instance
+        // mono method called every frame
+        void Update()
+        {
+            // check if game world is instantiated, instatiated = exists in scene
+            if (!Singleton<GameWorld>.Instantiated) return; // don't allow logic to run if not instantiated
+
+            gameWorld = Singleton<GameWorld>.Instance;
+        }
+    }*/
     public class GetAssetReturnPatch : ModulePatch
     {
         public static UnityEngine.Object asset { get; set; } // Number we want to equal the result of CalculateInt
@@ -97,3 +111,20 @@ namespace BorkelRNVG
         }
     }
 }
+
+/*            if(__instance.Mask.name == __instance.AnvisMaskTexture.name)
+            {
+                __instance.Mask = masks[0];
+            }
+            else if (__instance.Mask.name == __instance.BinocularMaskTexture.name)
+            {
+                __instance.Mask = masks[1];
+            }
+            else if (__instance.Mask.name == __instance.OldMonocularMaskTexture.name)
+            {
+                __instance.Mask = masks[2];
+            }
+            __instance.AnvisMaskTexture = masks[0];
+            __instance.BinocularMaskTexture = masks[1];
+            __instance.OldMonocularMaskTexture = masks[2];
+*/
