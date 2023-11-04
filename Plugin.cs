@@ -76,7 +76,7 @@ namespace BorkelRNVG
         // Inherit GetTargetMethod and have it return with the MethodBase for our requested method
         protected override MethodBase GetTargetMethod()
         {   // BindingFlags.NonPublic as the method is private
-            return typeof(Resources).GetMethods().Single(m => m.Name == "Load" && m.GetParameters().Length == 1 && m.ReturnType == typeof(UnityEngine.Object));
+            return typeof(Resources).GetMethods().Single(m => m.Name == "Load" && m.GetParameters().Length == 2 && m.ReturnType == typeof(UnityEngine.Object));
             //return typeof(AssetsManagerClass).GetMethod("method_0", BindingFlags.Instance | BindingFlags.NonPublic);
         }
         // Create postfix method with PatchPostfix attribute and ref matching the type of the method's result
@@ -86,7 +86,7 @@ namespace BorkelRNVG
             asset = __result; // Get the return value from CalculateInt and set it to our field
             if (asset != null)
             {
-                Logger.LogMessage($"ASSET NAME: {asset.name}");
+                Logger.LogMessage($"ASSET NAME: {asset.name} of Type: {asset.GetType().Name}");
 
             }
             else
