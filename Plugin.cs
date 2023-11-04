@@ -1,6 +1,6 @@
 ﻿using EFT;
 using Aki.Reflection.Patching;
-//using Comfort.Common;
+using Comfort.Common;
 using BepInEx;
 using System;
 using System.IO;
@@ -10,13 +10,14 @@ using BepInEx.Logging;
 using HarmonyLib;
 using System.Linq;
 using BSG.CameraEffects;
+using System.Xml.Linq;
 
 namespace BorkelRNVG
 {
     [BepInPlugin("com.borkel.nvgmasks", "my very humble attempt at replacing the damn nvg masks", "1.0.0")]
     public class Plugin : BaseUnityPlugin
     {
-        public Texture2D[] masks;
+        public static Texture2D[] masks;
         public AssetBundle bundle;
         private void Awake()
         {
@@ -36,29 +37,14 @@ namespace BorkelRNVG
                     Logger.LogMessage($"Texture2D 0: {masks[0].name}"); //mask 0: mask_anvis
                     Logger.LogMessage($"Texture2D 1: {masks[1].name}"); //mask 1: mask_binocular
                     Logger.LogMessage($"Texture2D 2: {masks[2].name}"); //mask 2: mask_old_monocular
-                    new GetAssetReturnPatch().Enable();
-
-                    //this is just to test that the bundle and the assets are correctly loaded by the .dll
-                    //it extracts the .png assets from the bundle, it does it correctly
-                    /*foreach (var mask in masks)
+                    //new AccessNightVisiondPatch().Enable();
+                    Type NVType = typeof(NightVision);
+                    FieldInfo NVFieldInfo = NVType.GetField("Mask", BindingFlags.Public | BindingFlags.Instance);
+                    if (!Singleton<GameWorld>.Instantiated)
                     {
-                        // Get the texture name
-                        string textureName = mask.name + ".png";
-
-                        // Combine the directory path with the texture name
-                        string outputPath = Path.Combine(directory, textureName);
-
-                        // Create a new Texture2D in ARGB32 format and copy the content
-                        Texture2D newTexture = new Texture2D(mask.width, mask.height, TextureFormat.ARGB32, false);
-                        newTexture.SetPixels(mask.GetPixels());
-                        newTexture.Apply();
-
-                        // Encode the new texture to PNG and save it to the directory
-                        byte[] bytes = newTexture.EncodeToPNG();
-                        File.WriteAllBytes(outputPath, bytes);
-
-                        Logger.LogMessage($"Extracted {textureName} to {outputPath}");
-                    }*/
+                        Logger.LogError("Failed to load NightVision instance.");
+                    }
+                        Logger.LogMessage($"Value of Mask is: {NVFieldInfo.GetValue(Singleton<NightVision>.Instance)}");
                 }
                 else
                 {
@@ -71,43 +57,77 @@ namespace BorkelRNVG
             }
         }
     }
-    /*public class AccessGameWorldController : MonoBehaviour
+    public class AccessNightVisionController : MonoBehaviour
     {
-        private static NightVision gameWorld; // field we'll use to hold the GameWorld instance
+        private static NightVision NV; // field we'll use to hold the GameWorld instance
         // mono method called every frame
         void Update()
         {
             // check if game world is instantiated, instatiated = exists in scene
-            if (!Singleton<GameWorld>.Instantiated) return; // don't allow logic to run if not instantiated
+            if (!Singleton<NightVision>.Instantiated) return; // don't allow logic to run if not instantiated
 
-            gameWorld = Singleton<GameWorld>.Instance;
+            NV = Singleton<NightVision>.Instance;
+            //Logger.LogMessage($"Value of Mask is: {NVFieldInfo.GetValue(Singleton<NightVision>.Instance)}");
+            FieldInfo myMask = typeof(NightVision).GetField("Mask", BindingFlags.Public | BindingFlags.Instance);
+            FieldInfo NotMyAnvis = typeof(NightVision).GetField("AnvisMaskTexture", BindingFlags.Public | BindingFlags.Instance);
+            FieldInfo NotMyBino = typeof(NightVision).GetField("BinocularMaskTexture", BindingFlags.Public | BindingFlags.Instance);
+            FieldInfo NotMyMono = typeof(NightVision).GetField("OldMonocularMaskTexture", BindingFlags.Public | BindingFlags.Instance);
+            Texture2D mask = (Texture2D)myMask.GetValue(NV);
+            Texture2D anvis = (Texture2D)NotMyAnvis.GetValue(NV);
+            Texture2D bino = (Texture2D)NotMyBino.GetValue(NV);
+            Texture2D mono = (Texture2D)NotMyMono.GetValue(NV);
+            if (mask.name == anvis.name)
+            {
+                myMask.SetValue(NV, Plugin.masks[0]);
+            }
+            else if (mask.name == bino.name)
+            {
+                myMask.SetValue(NV, Plugin.masks[1]);
+            }
+            else if (mask.name == mono.name)
+            {
+                myMask.SetValue(NV, Plugin.masks[2]);
+            }
+            NotMyAnvis.SetValue(NV, Plugin.masks[0]);
+            NotMyBino.SetValue(NV, Plugin.masks[1]);
+            NotMyMono.SetValue(NV, Plugin.masks[2]);
+
         }
-    }*/
-    public class GetAssetReturnPatch : ModulePatch
+    }
+    public class AccessNightVisiondPatch : ModulePatch
     {
-        public static UnityEngine.Object asset { get; set; } // Number we want to equal the result of CalculateInt
-
-        // Inherit GetTargetMethod and have it return with the MethodBase for our requested method
+        // Inherit GetTargetMethod from ModulePatch
         protected override MethodBase GetTargetMethod()
-        {   // BindingFlags.NonPublic as the method is private
-            return typeof(Resources).GetMethods().Single(m => m.Name == "Load" && m.GetParameters().Length == 2 && m.ReturnType == typeof(UnityEngine.Object));
-            //return typeof(AssetsManagerClass).GetMethod("method_0", BindingFlags.Instance | BindingFlags.NonPublic);
+        {   // Get method from type, use BindingFlags.Public as it's a public method
+            return typeof(NightVision).GetMethod("SetMask", BindingFlags.Public | BindingFlags.Instance);
         }
-        // Create postfix method with PatchPostfix attribute and ref matching the type of the method's result
+        // Will be invoked after the "OnGameStarted" method is ran and the world is loaded
+        // from here you can access objects in the game world
         [PatchPostfix]
-        static void Postfix(ref UnityEngine.Object __result)
+        void PostFix()
         {
-            asset = __result; // Get the return value from CalculateInt and set it to our field
-            if (asset != null)
+            // put logic here
+            /*FieldInfo myMask=typeof(NightVision).GetField("Mask", BindingFlags.Public | BindingFlags.Instance);
+            FieldInfo myAnvis=typeof(NightVision).GetField("AnvisMaskTexture", BindingFlags.Public | BindingFlags.Instance);
+            FieldInfo myBi=typeof(NightVision).GetField("BinocularMaskTexture", BindingFlags.Public | BindingFlags.Instance);
+            FieldInfo myMono=typeof(NightVision).GetField("OldMonocularMaskTexture", BindingFlags.Public | BindingFlags.Instance);*/
+            /*Logger.LogError("POSTFIX-BORKEL");
+            Logger.LogError($"Mask: {AccessNightVisionController.Update().Mask.name}");
+            if (AccessNightVisionController.Update().Mask.name == AccessNightVisionController.Update().AnvisMaskTexture.name)
             {
-                Logger.LogMessage($"ASSET NAME: {asset.name} of Type: {asset.GetType().Name}");
-
+                AccessNightVisionController.Update().Mask = Plugin.masks[0];
             }
-            else
+            else if (AccessNightVisionController.Update().Mask.name == AccessNightVisionController.Update().BinocularMaskTexture.name)
             {
-                Logger.LogMessage($"ASSET BE NULL");
+                AccessNightVisionController.Update().Mask = Plugin.masks[1];
             }
-            //Logger.LogMessage($"ASSET------------------------------------");
+            else if (AccessNightVisionController.Update().Mask.name == AccessNightVisionController.Update().OldMonocularMaskTexture.name)
+            {
+                AccessNightVisionController.Update().Mask = Plugin.masks[2];
+            }
+            AccessNightVisionController.Update().AnvisMaskTexture = Plugin.masks[0];
+            AccessNightVisionController.Update().BinocularMaskTexture = Plugin.masks[1];
+            AccessNightVisionController.Update().OldMonocularMaskTexture = Plugin.masks[2];*/
         }
     }
 }
