@@ -7,6 +7,7 @@ using System.Reflection;
 using UnityEngine;
 using BepInEx.Logging;
 using HarmonyLib;
+using System.Linq;
 
 namespace BorkelRNVG
 {
@@ -75,10 +76,8 @@ namespace BorkelRNVG
         // Inherit GetTargetMethod and have it return with the MethodBase for our requested method
         protected override MethodBase GetTargetMethod()
         {   // BindingFlags.NonPublic as the method is private
-            Type MyType = Type.GetType("System.Reflection.FieldInfo");
-            MethodInfo Mymethodinfo = MyType.GetMethod("GetAsset");
-            Type ReturnType = Mymethodinfo.ReturnType;
-            return typeof(AssetsManagerClass).GetMethod("GetAsset", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(Resources).GetMethods().Single(m => m.Name == "Load" && m.GetParameters().Length == 1 && m.ReturnType == typeof(UnityEngine.Object));
+            //return typeof(AssetsManagerClass).GetMethod("method_0", BindingFlags.Instance | BindingFlags.NonPublic);
         }
         // Create postfix method with PatchPostfix attribute and ref matching the type of the method's result
         [PatchPostfix]
