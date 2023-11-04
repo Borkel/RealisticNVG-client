@@ -13,7 +13,8 @@ namespace BorkelRNVG
     [BepInPlugin("com.borkel.nvgmasks", "my very humble attempt at replacing the damn nvg masks", "1.0.0")]
     public class Plugin : BaseUnityPlugin
     {
-        Texture2D[] masks;
+        public Texture2D[] masks;
+        public AssetBundle bundle;
         private void Awake()
         {
             //directory contains string of path where the .dll is located, for me it is C:\SPTarkov3.7.1\BepInEx\plugins
@@ -24,11 +25,14 @@ namespace BorkelRNVG
             //Load all assets from the bundle realmasks located in C:\SPTarkov3.7.1\BepInEx\plugins\BorkelRNVG
             if (File.Exists(bundlePath))
             {
-                AssetBundle bundle = AssetBundle.LoadFromFile(bundlePath); //loads the bundle
-
+                bundle = AssetBundle.LoadFromFile(bundlePath); //loads the modified bundle resources.assets
                 if (bundle != null)
                 {
-                    masks = bundle.LoadAllAssets<Texture2D>(); //loads the three mask textures:mask_anvis, mask_binocular, mask_old_monocular
+                    Logger.LogMessage($"---BUNDLE LOADED---");
+                    masks = bundle.LoadAllAssets<Texture2D>(); //loads all assets, including the important ones: mask_anvis, mask_binocular, mask_old_monocular
+                    Logger.LogMessage($"mask 0: {masks[0].name}"); //mask 0: mask_anvis
+                    Logger.LogMessage($"mask 1: {masks[1].name}"); //mask 1: mask_binocular
+                    Logger.LogMessage($"mask 2: {masks[2].name}"); //mask 2: mask_old_monocular
 
                     //this is just to test that the bundle and the assets are correctly loaded by the .dll
                     //it extracts the .png assets from the bundle, it does it correctly
@@ -61,6 +65,24 @@ namespace BorkelRNVG
             {
                 Logger.LogError("Asset bundle not found.");
             }
+        }
+    }
+    public class GetAssetReturnPatch : ModulePatch
+    {
+        public static UnityEngine.Object asset { get; set; } // Number we want to equal the result of CalculateInt
+
+        // Inherit GetTargetMethod and have it return with the MethodBase for our requested method
+        protected override MethodBase GetTargetMethod()
+        {   // BindingFlags.NonPublic as the method is private
+            return typeof(AssetsManagerClass).GetMethod("method_0", BindingFlags.Instance | BindingFlags.NonPublic);
+        }
+        // Create postfix method with PatchPostfix attribute and ref matching the type of the method's result
+        [PatchPostfix]
+        static void Postfix(ref UnityEngine.Object __result)
+        {
+            asset = __result; // Get the return value from CalculateInt and set it to our field
+            //Logger.LogMessage($"ASSET NAME: {asset.name}");
+            Logger.LogMessage($"ASSET------------------------------------");
         }
     }
 }
