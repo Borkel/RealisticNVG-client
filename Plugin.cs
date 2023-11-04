@@ -23,7 +23,7 @@ namespace BorkelRNVG
         {
             //directory contains string of path where the .dll is located, for me it is C:\SPTarkov3.7.1\BepInEx\plugins
             string directory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            //realmasks is the bundle
+            //realmasks is the bundle, Fontaine suggests to load the masks from PNGs isntead of a bundle, should change it
             string bundlePath = $"{directory}\\BorkelRNVG\\realmasks";
             Logger.LogMessage($"directory {directory} bundlepath {bundlePath}");
             //Load all assets from the bundle realmasks located in C:\SPTarkov3.7.1\BepInEx\plugins\BorkelRNVG
@@ -38,13 +38,13 @@ namespace BorkelRNVG
                     Logger.LogMessage($"Texture2D 1: {masks[1].name}"); //mask 1: mask_binocular
                     Logger.LogMessage($"Texture2D 2: {masks[2].name}"); //mask 2: mask_old_monocular
                     //new AccessNightVisiondPatch().Enable();
-                    Type NVType = typeof(NightVision);
+                    /*Type NVType = typeof(NightVision);
                     FieldInfo NVFieldInfo = NVType.GetField("Mask", BindingFlags.Public | BindingFlags.Instance);
                     if (!Singleton<GameWorld>.Instantiated)
                     {
                         Logger.LogError("Failed to load NightVision instance.");
                     }
-                        Logger.LogMessage($"Value of Mask is: {NVFieldInfo.GetValue(Singleton<NightVision>.Instance)}");
+                        Logger.LogMessage($"Value of Mask is: {NVFieldInfo.GetValue(Singleton<NightVision>.Instance)}");*/
                 }
                 else
                 {
