@@ -4,7 +4,8 @@ Many thanks Fontaine, Mirni, Cj, GrooveypenguinX, Choccster, kiobu-kouhai, Graki
 Link to the mod: https://hub.sp-tarkov.com/files/file/1303-borkel-s-realistic-night-vision-goggles-nvg/ .
 This client mod will replace all mask textures of the NVGs to look more realistic.
 
-#Documentation and examples i used
+# Documentation and examples i used
+
 https://dev.sp-tarkov.com/SamSWAT/Deadass/src/branch/main/Projects/SamSWAT.WatchAnims
 
 https://github.com/kobrakon/ClientModdingExamples/tree/main/C%23%20Mod%20Examples
