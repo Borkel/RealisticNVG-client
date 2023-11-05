@@ -18,8 +18,8 @@ namespace BorkelRNVG
     [BepInPlugin("com.borkel.nvgmasks", "my very humble attempt at replacing the damn nvg masks", "1.0.0")]
     public class Plugin : BaseUnityPlugin
     {
-        public static Texture2D[] masks;
-        public AssetBundle bundle;
+        public static Texture2D[] masks; //my modded masks will be loaded here
+        public AssetBundle bundle; //grabs the bundle with my masks
         private void Awake()
         {
             //directory contains string of path where the .dll is located, for me it is C:\SPTarkov3.7.1\BepInEx\plugins
@@ -35,6 +35,9 @@ namespace BorkelRNVG
                 {
                     Logger.LogMessage($"---BUNDLE LOADED---");
                     masks = bundle.LoadAllAssets<Texture2D>(); //loads all assets, including the important ones: mask_anvis, mask_binocular, mask_old_monocular
+                    masks[0].wrapMode = TextureWrapMode.Clamp; 
+                    masks[1].wrapMode = TextureWrapMode.Clamp; //otherwise the mask will repeat itself around screen borders
+                    masks[2].wrapMode = TextureWrapMode.Clamp;
                     Logger.LogMessage($"Texture2D 0: {masks[0].name}"); //mask 0: mask_anvis
                     Logger.LogMessage($"Texture2D 1: {masks[1].name}"); //mask 1: mask_binocular
                     Logger.LogMessage($"Texture2D 2: {masks[2].name}"); //mask 2: mask_old_monocular
@@ -51,32 +54,30 @@ namespace BorkelRNVG
             }
         }
     }
-    public class SetMaskPatch : ModulePatch
+    public class SetMaskPatch : ModulePatch //this will patch the instance of the NightVision class, thanks Fontaine and Mirni
     {
         protected override MethodBase GetTargetMethod()
         {
             return typeof(NightVision).GetMethod("SetMask", BindingFlags.Instance | BindingFlags.Public);
         }
         [PatchPrefix]
-        private static bool Prefix(ref NightVision __instance)
+        private static void Prefix(ref NightVision __instance)
         {
             //code goes here
-            if (__instance.Mask.name == __instance.AnvisMaskTexture.name)
-            {
-                __instance.Mask = Plugin.masks[0];
-            }
-            else if (__instance.Mask.name == __instance.BinocularMaskTexture.name)
-            {
-                __instance.Mask = Plugin.masks[1];
-            }
-            else if (__instance.Mask.name == __instance.OldMonocularMaskTexture.name)
-            {
-                __instance.Mask = Plugin.masks[2];
-            }
+            //just to check all the masks are what they are supposed to be
+            Logger.LogMessage($"Mask name: {__instance.Mask.name}");
+            Logger.LogMessage($"Anvismask name: {__instance.AnvisMaskTexture.name}");
+            Logger.LogMessage($"Binosmask name: {__instance.BinocularMaskTexture.name}");
+            Logger.LogMessage($"Monomask name: {__instance.OldMonocularMaskTexture.name}");
+            //replaces the masks in the class NightVision
             __instance.AnvisMaskTexture = Plugin.masks[0];
             __instance.BinocularMaskTexture = Plugin.masks[1];
             __instance.OldMonocularMaskTexture = Plugin.masks[2];
-            return false; //prevents original method from running, so we can fully override it
+            Logger.LogMessage($"After Mask name: {__instance.Mask.name}");
+            Logger.LogMessage($"After Anvismask name: {__instance.AnvisMaskTexture.name}");
+            Logger.LogMessage($"After Binosmask name: {__instance.BinocularMaskTexture.name}");
+            Logger.LogMessage($"After Monomask name: {__instance.OldMonocularMaskTexture.name}");
+            //return false; //prevents original method from running, so we can fully override it //not needed
 
         }
     }
