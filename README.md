@@ -6,7 +6,11 @@ This client mod will replace all mask textures of the NVGs to look more realisti
 
 #Documentation and examples i used
 https://dev.sp-tarkov.com/SamSWAT/Deadass/src/branch/main/Projects/SamSWAT.WatchAnims
+
 https://github.com/kobrakon/ClientModdingExamples/tree/main/C%23%20Mod%20Examples
+
 https://hub.sp-tarkov.com/doc/entry/54-tutorial-intro-to-client-modding-and-mod-examples/
+
 https://learn.microsoft.com/en-us/dotnet/api/system.reflection.methodinfo.returntype?view=net-7.0
+
 https://learn.microsoft.com/en-us/dotnet/api/system.reflection.fieldinfo.setvalue?view=net-7.0
