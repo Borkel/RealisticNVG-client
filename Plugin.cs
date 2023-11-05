@@ -54,7 +54,7 @@ namespace BorkelRNVG
             }
         }
     }
-    public class SetMaskPatch : ModulePatch //this will patch the instance of the NightVision class, thanks Fontaine, Mirni, Cj, GrooveypenguinX, Choccster, kiobu-kouhai, GrakiaXYZ, Props (sorry if i forget someone)
+    public class SetMaskPatch : ModulePatch //this will patch the instance of the NightVision class, thanks Fontaine, Mirni, Cj, GrooveypenguinX, Choccster, kiobu-kouhai, GrakiaXYZ, kiki, Props (sorry if i forget someone)
     {
         protected override MethodBase GetTargetMethod()
         {
